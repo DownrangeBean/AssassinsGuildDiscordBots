@@ -1,5 +1,4 @@
 import os
-import asyncio
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -18,6 +17,7 @@ intents.message_content = True  # Needed to read message content for commands
 # Initialize the bot with command prefix and intents
 bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 
+
 # Function to load all cogs
 async def load_cogs():
     """Load all cogs from the cogs directory."""
@@ -28,6 +28,7 @@ async def load_cogs():
                 print(f'Loaded extension: {filename[:-3]}')
             except Exception as e:
                 print(f'Failed to load extension {filename[:-3]}: {e}')
+
 
 @bot.event
 async def on_ready():
@@ -42,16 +43,19 @@ async def on_ready():
     # Set the bot's status
     await bot.change_presence(activity=discord.Game(name=f"Type {PREFIX}help"))
 
+
 @bot.command(name='ping', help='Responds with the bot\'s latency')
 async def ping(ctx):
     """Simple command to check if the bot is responsive."""
     latency = round(bot.latency * 1000)  # Convert to milliseconds
     await ctx.send(f'Pong! Latency: {latency}ms')
 
+
 @bot.command(name='hello', help='Says hello to the user')
 async def hello(ctx):
     """Greets the user who invoked the command."""
     await ctx.send(f'Hello, {ctx.author.mention}! How are you today?')
+
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -64,6 +68,7 @@ async def on_command_error(ctx, error):
         await ctx.send(f"An error occurred: {str(error)}")
         # Log the error for debugging
         print(f"Error in command {ctx.command}: {error}")
+
 
 # Run the bot
 if __name__ == '__main__':
