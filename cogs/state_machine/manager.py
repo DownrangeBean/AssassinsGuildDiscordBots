@@ -1,6 +1,6 @@
 import discord
 from typing import Dict, Optional
-from .states import RoleState, RoleTypes, ROLES_TYPE_NAMES as SUPPORTED_ROLES, DefaultState
+from .states import RoleState, RoleTypes, ROLES_TYPE_NAMES as SUPPORTED_ROLES, DefaultState, PlayerState
 from .events import Event, EventType
 
 
@@ -16,7 +16,7 @@ class RoleManager:
     """Manages role states and transitions for members in an event-driven manner."""
 
     def __init__(self):
-        self.states: Dict[str, RoleState] = {}
+        self.states: Dict[PlayerState, RoleState] = {}
         self.member_states: Dict[int, str] = {}  # Maps member IDs to current state names
 
     def add_state(self, state: RoleState) -> None:
@@ -30,7 +30,7 @@ class RoleManager:
             return self.states.get(state_name)
         return None
 
-    def _find_best_matching_state(self, member_roles: list[discord.Role]) -> RoleState:
+    def find_best_matching_state(self, member_roles: list[discord.Role]) -> RoleState:
 
         """Find the state that most closely represents the roles that the member has currently."""
         min_difference = None
@@ -58,10 +58,10 @@ class RoleManager:
         return best_state
 
 
-    async def set_member_state(self, member: discord.Member, state_name: str) -> None:
+    async def set_member_state(self, member: discord.Member, state: PlayerState) -> None:
         """Set a member to a new state."""
-        if state_name not in self.states:
-            raise ValueError(f"State {state_name} does not exist")
+        if state not in self.states:
+            raise ValueError(f"State {state.value} does not exist")
 
         # Exit current state if exists
         current_state = self.get_member_state(member.id)
@@ -69,12 +69,12 @@ class RoleManager:
             await current_state.exit(member)
 
         # Enter new state
-        new_state = self.states[state_name]
+        new_state = self.states[state]
         await new_state.enter(member)
 
         # Update member state
-        self.member_states[member.id] = state_name
-        print(f"Member {member.display_name} transitioned to {state_name} state")
+        self.member_states[member.id] = state
+        print(f"Member {member.display_name} transitioned to {state} state")
 
     async def process_event(self, event: Event) -> None:
         """
@@ -97,11 +97,11 @@ class RoleManager:
         current_state = self.states[current_state_name]
 
         # Handle event and check for transition
-        next_state_name = current_state.handle_event(event)
+        next_state = current_state.handle_event(event)
 
         # If transition is needed, change state
-        if next_state_name and next_state_name in self.states:
-            await self.set_member_state(event.member, next_state_name)
+        if next_state and next_state in self.states:
+            await self.set_member_state(event.member, next_state)
 
     async def _resolve_unknown_state(self, event: Event) -> RoleState:
         """Attempts to find a state for the current member, given known context"""
@@ -119,7 +119,7 @@ class RoleManager:
             state = self.states.get("@everyone")
             print(f"No roles found for member {event.member.display_name}, using default state")
         else:
-            state = self._find_best_matching_state(roles)
+            state = self.find_best_matching_state(roles)
 
         if state is None:
             raise StateNotFoundError(f"No state found for member {event.member.display_name}")

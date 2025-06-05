@@ -23,7 +23,6 @@ class PlayerState(Enum):
     ELIMINATED = "Eliminated"
 
 
-
 class RoleState(ABC):
     """Base abstract class for role states in an event-driven state machine."""
 

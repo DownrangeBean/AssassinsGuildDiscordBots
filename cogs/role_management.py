@@ -7,7 +7,7 @@ from typing import Dict
 from .state_machine.events import Event, EventType
 from .state_machine.manager import RoleManager
 from .state_machine.config import AVAILABLE_STATES
-from .state_machine.states import _ElapsedTimeState
+from .state_machine.states import _ElapsedTimeState, RoleTypes, PlayerState, ROLES_TYPE_NAMES
 
 
 class RoleManagement(commands.Cog):
@@ -28,6 +28,32 @@ class RoleManagement(commands.Cog):
 
         # Schedule time elapsed check task
         self.time_elapsed_check.start()  # Start the time elapsed check task
+    
+    async def cog_load(self):
+        """Initialize member states based on current roles."""
+        for guild in self.bot.guilds:
+            for member in guild.members:
+                if member.bot:
+                    continue
+                state = None
+                # use members current roles to match a state.
+                roles = [role for role in member.roles if role.name in ROLES_TYPE_NAMES]
+                if not len(roles):
+                    state = self.states.get("@everyone")
+                    print(f"No roles found for member {member.display_name}, using default state")
+                else:
+                    state = self.role_manager.find_best_matching_state(roles)
+                # Determine initial state based on roles
+                # if any(role.name == RoleTypes.ELIMINATED.value for role in member.roles):
+                #     await self.role_manager.set_member_state(member, "eliminated")
+                # elif any(role.name == RoleTypes.ACTIVE_MEMBER.value for role in member.roles):
+                #     await self.role_manager.set_member_state(member, "active_member")
+                # elif any(role.name == RoleTypes.NEW_MEMBER.value for role in member.roles):
+                #     await self.role_manager.set_member_state(member, PlayerState.NEW_MEMBER)
+                # else:
+                if state is None:
+                    print(f"Could not resolve a state for player {member.display_name}")
+                await self.role_manager.set_member_state(member, state.name)
 
     @commands.Cog.listener()
     async def on_message(self, message):

@@ -11,4 +11,5 @@ WORKDIR /srv/AssassinsGuildBot/
 RUN apk update
 RUN apk add python3 py3-virtualenv py3-pip
 
+ENV PYTHONUNBUFFERED=True
 ENTRYPOINT ["/bin/sh", "./run.sh"]

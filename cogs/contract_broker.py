@@ -57,11 +57,11 @@ class ContractBroker(commands.Cog):
         new_players = []
 
         for member_id, state_name in role_management_cog.role_manager.member_states.items():
-            if state_name == PlayerState.ACTIVE_MEMBER.value:
+            if state_name == PlayerState.ACTIVE_MEMBER:
                 member = guild.get_member(member_id)
                 if member and not member.bot and member_id in self.last_photos:
                     active_players.append(member)
-            elif state_name == PlayerState.NEW_MEMBER.value:
+            elif state_name == PlayerState.NEW_MEMBER:
                 member = guild.get_member(member_id)
                 if member and not member.bot and member_id in self.last_photos:
                     new_players.append(member)
