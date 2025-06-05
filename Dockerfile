@@ -7,6 +7,6 @@ COPY requirements.txt /srv/AssassinsGuildBot/requirements.txt
 COPY run.sh /srv/AssassinsGuildBot/run.sh
 
 RUN apk update
-RUN apk add python3 py3-virtualenv py3-pip
+RUN apk add python3 py3-virtualenv py3-pip top
 # just testing webhook for builds
-ENTRYPOINT ["/srv/AssassinsGuildBot/run.sh"]
+ENTRYPOINT ["top"]
