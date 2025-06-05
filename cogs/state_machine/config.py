@@ -64,7 +64,7 @@ def configure_states(roleIds: dict):
     active_member_state.add_transition(EventType.REACTION_ADD, check_hit_confirmation, PlayerState.ELIMINATED)
 
     # Configure transitions for eliminated state
-    eliminated_state.add_transition(EventType.TIME_ELAPSED, time_elapsed(7200), PlayerState.ACTIVE_MEMBER)
+    eliminated_state.add_transition(EventType.TIME_ELAPSED, time_elapsed(1700), PlayerState.ACTIVE_MEMBER)
     eliminated_state.add_transition(EventType.MANUAL_UPDATE, handle_manual_update)
 
     global AVAILABLE_STATES

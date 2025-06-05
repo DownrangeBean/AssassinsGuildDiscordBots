@@ -21,7 +21,7 @@ class ContractBroker(commands.Cog):
         """Clean up when the cog is unloaded."""
         self.contract_distribution.cancel()
 
-    @tasks.loop(hours=2)
+    @tasks.loop(minutes=30)
     async def contract_distribution(self):
         """
         Every two hours, collect all members with 'Active Player' role,
