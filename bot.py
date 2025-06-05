@@ -2,6 +2,7 @@ import os
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+from cogs.state_machine.config import init as state_init
 
 # Load environment variables from .env file
 load_dotenv()
@@ -13,6 +14,7 @@ PREFIX = os.getenv('COMMAND_PREFIX', '!')  # Default to '!' if not specified
 # Set up intents (permissions)
 intents = discord.Intents.default()
 intents.message_content = True  # Needed to read message content for commands
+intents.members = True
 
 # Initialize the bot with command prefix and intents
 bot = commands.Bot(command_prefix=PREFIX, intents=intents)
@@ -22,7 +24,7 @@ bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 async def load_cogs():
     """Load all cogs from the cogs directory."""
     for filename in os.listdir('./cogs'):
-        if filename.endswith('.py'):
+        if filename.endswith('.py') and not filename.startswith('_'):
             try:
                 await bot.load_extension(f'cogs.{filename[:-3]}')
                 print(f'Loaded extension: {filename[:-3]}')
@@ -37,11 +39,28 @@ async def on_ready():
     print(f'Bot ID: {bot.user.id}')
     print(f'Command prefix: {PREFIX}')
 
+    # setup role management
+    guild = await findGuild()
+    if guild is None:
+      print('GuildId could not be found')
+      return
+
+    # setup role management states
+    state_init(guild)
     # Load all cogs
     await load_cogs()
 
     # Set the bot's status
     await bot.change_presence(activity=discord.Game(name=f"Type {PREFIX}help"))
+
+
+async def findGuild():
+    """Returns the guild object for the bot.
+    If the guild is not found by name, returns the first guild in the list."""
+    guild = discord.utils.get(bot.guilds, name="AssassinsGuild")
+    if guild is None:
+        guild = bot.guilds[0] if len(bot.guilds) > 0 else None
+    return guild
 
 
 @bot.command(name='ping', help='Responds with the bot\'s latency')

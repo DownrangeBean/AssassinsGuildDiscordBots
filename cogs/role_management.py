@@ -6,7 +6,8 @@ from typing import Dict
 # Import from state_machine package
 from .state_machine.events import Event, EventType
 from .state_machine.manager import RoleManager
-from .state_machine.config import configure_states
+from .state_machine.config import AVAILABLE_STATES
+from .state_machine.states import _ElapsedTimeState
 
 
 class RoleManagement(commands.Cog):
@@ -16,14 +17,7 @@ class RoleManagement(commands.Cog):
         self.bot = bot
         self.role_manager = RoleManager()
 
-        # Initialize with configured states
-        # In a real implementation, these IDs would be loaded from a configuration file
-        states = configure_states(
-            new_member_role_id=123456789, 
-            active_member_role_id=987654321,
-            eliminated_role_id=456789123  # Example role ID for eliminated players
-        )
-        for state in states:
+        for state in AVAILABLE_STATES:
             self.role_manager.add_state(state)
 
         # Track message counts for context
@@ -55,6 +49,8 @@ class RoleManagement(commands.Cog):
         event_data = {
             "message_count": self.message_counts[message.author.id],
             "channel_id": message.channel.id,
+            "channel_name": message.channel.name,
+            "has_attachments": bool(message.attachments),
             "content": message.content,
             "guild_id": message.guild.id,
             # Add more context data as needed
@@ -144,46 +140,23 @@ class RoleManagement(commands.Cog):
     #             
     #             await self.role_manager.process_event(inactivity_event)
 
-    @tasks.loop(minutes=5)  # Check every 5 minutes
+    @tasks.loop(minutes=1)  # Check every 5 minutes
     async def time_elapsed_check(self):
         """Check for eliminated members who should return to active state."""
-        for guild in self.bot.guilds:
-            # Get the Eliminated state
-            eliminated_state = self.role_manager.states.get("Eliminated")
-            if not eliminated_state:
-                continue
 
-            # Check each member in the Eliminated state
-            for member_id, state_name in self.role_manager.member_states.items():
-                if state_name != "Eliminated":
-                    continue
+        for member_id, stateId in self.role_manager.member_states.items():
+            # Create and process the time elapsed event
+            state = self.role_manager.states[stateId]
+            member = discord.utils.get(self.bot.get_all_members(), id=member_id)
+            if member is None:
+               continue
+            time_event = Event(
+                type=EventType.TIME_ELAPSED,
+                member=member,
+                data=state.get_ctx(member_id),
+            )
 
-                # Get the member object
-                member = guild.get_member(member_id)
-                if not member:
-                    continue
-
-                # Get the elimination time from the state
-                elimination_time = eliminated_state.elimination_times.get(member_id)
-                if not elimination_time:
-                    # If we don't have a record, create one now
-                    eliminated_state.elimination_times[member_id] = time.time()
-                    continue
-
-                # Create event data with elimination time
-                event_data = {
-                    "elimination_time": elimination_time,
-                    "guild_id": guild.id,
-                }
-
-                # Create and process the time elapsed event
-                time_event = Event(
-                    type=EventType.TIME_ELAPSED,
-                    member=member,
-                    data=event_data
-                )
-
-                await self.role_manager.process_event(time_event)
+            await self.role_manager.process_event(time_event)
 
     @time_elapsed_check.before_loop
     async def before_time_elapsed_check(self):
@@ -194,6 +167,7 @@ class RoleManagement(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     async def set_role_state(self, ctx, member: discord.Member, state_name: str):
         """Manually set a member to a specific role state using a MANUAL_UPDATE event."""
+        print(ctx, member, state_name)
         if state_name not in self.role_manager.states:
             await ctx.send(f"Error: State '{state_name}' does not exist")
             return
@@ -210,6 +184,8 @@ class RoleManagement(commands.Cog):
             await self.role_manager.process_event(manual_event)
 
             # If the event didn't result in a transition, force the state change
+            # This is a fallback in case the member doesn't have a current state or
+            # the current state doesn't have a transition for MANUAL_UPDATE
             if self.role_manager.member_states.get(member.id) != state_name:
                 await self.role_manager.set_member_state(member, state_name)
 
