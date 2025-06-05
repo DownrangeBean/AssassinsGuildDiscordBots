@@ -14,7 +14,8 @@ PREFIX = os.getenv('COMMAND_PREFIX', '!')  # Default to '!' if not specified
 # Set up intents (permissions)
 intents = discord.Intents.default()
 intents.message_content = True  # Needed to read message content for commands
-intents.members = True
+intents.members = True  # needed to see all members of guild
+intents.dm_messages = True  # needed to send messages from DM's'
 
 # Initialize the bot with command prefix and intents
 bot = commands.Bot(command_prefix=PREFIX, intents=intents)

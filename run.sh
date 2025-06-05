@@ -14,6 +14,4 @@ echo "Checking requirements...\n"
 pip install -r requirements.txt
 
 echo "Starting bot..."
-python ./bot.py
-
-deactivate
+exec python ./bot.py

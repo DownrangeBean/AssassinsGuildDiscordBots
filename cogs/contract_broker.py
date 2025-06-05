@@ -5,6 +5,8 @@ import asyncio
 from typing import Dict, List, Optional, Tuple
 import datetime
 
+from discord.types.member import Member
+
 from .state_machine.states import RoleTypes, PlayerState
 from .role_management import RoleManagement
 
@@ -21,7 +23,7 @@ class ContractBroker(commands.Cog):
         """Clean up when the cog is unloaded."""
         self.contract_distribution.cancel()
 
-    @tasks.loop(minutes=30)
+    @tasks.loop(minutes=5)
     async def contract_distribution(self):
         """
         Every two hours, collect all members with 'Active Player' role,
@@ -96,7 +98,7 @@ class ContractBroker(commands.Cog):
         self.last_photos.update(member_photos)
         print(f"Updated photos for {len(member_photos)} members")
 
-    async def generate_and_distribute_contracts(self, active_players, new_players):
+    async def generate_and_distribute_contracts(self, active_players: Member, new_players: Member):
         """
         Generate hit contracts and distribute them to players.
 
