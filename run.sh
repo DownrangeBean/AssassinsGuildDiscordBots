@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/sh
 echo 'Starting Discord Bot...'
 echo
 
