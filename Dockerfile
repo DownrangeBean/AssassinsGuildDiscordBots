@@ -7,6 +7,6 @@ COPY requirements.txt /srv/AssassinsGuildBot/
 COPY run.sh /srv/AssassinsGuildBot/
 
 RUN apk update
-RUN apk add python py3-virtualenv py3-pip
+RUN apk add python3 py3-virtualenv py3-pip
 
 ENTRYPOINT ["/srv/AssassinsGuildBot/run.sh"]
