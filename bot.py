@@ -9,9 +9,7 @@ load_dotenv()
 
 # Get configuration from environment variables
 TOKEN = os.getenv('DISCORD_TOKEN')
-PREFIX = os.getenv('COMMAND_PREFIX', '!')  # Default to '!' if not specified
-CONTRACT_FREQ = os.getenv('CONTRACT_FREQUENCY', 120)  # minutes
-NEWPLAYER_COOLDOWN = os.getenv('NEWPLAYER_COOLDOWN', 30)  # minutes
+PREFIX = os.getenv('COMMAND_PREFIX', '!')  # Default to '!' if not specifie
 
 # Set up intents (permissions)
 intents = discord.Intents.default()

@@ -1,3 +1,5 @@
+import os
+
 import discord
 from discord.ext import commands, tasks
 import random
@@ -6,10 +8,11 @@ from typing import Dict, List, Optional, Tuple
 import datetime
 
 from discord.types.member import Member
-
-from bot import CONTRACT_FREQ
 from .state_machine.states import RoleTypes, PlayerState
 from .role_management import RoleManagement
+
+
+CONTRACT_FREQ = os.getenv('CONTRACT_FREQUENCY', 120)  # minutes
 
 
 class ContractBroker(commands.Cog):

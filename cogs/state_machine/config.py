@@ -1,6 +1,7 @@
+import os
+
 import discord
 
-from bot import NEWPLAYER_COOLDOWN
 from .events import EventType
 from .transitions import (
     check_message_count,
@@ -12,6 +13,8 @@ from .transitions import (
 )
 from .states import NewMemberState, ActiveMemberState, EliminatedState, DefaultState, RoleTypes, PlayerState
 
+
+NEWPLAYER_COOLDOWN = os.getenv('NEWPLAYER_COOLDOWN', 30)  # minutes
 AVAILABLE_STATES: list
 
 
