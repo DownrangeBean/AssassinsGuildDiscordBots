@@ -1,5 +1,6 @@
 import discord
 
+from bot import NEWPLAYER_COOLDOWN
 from .events import EventType
 from .transitions import (
     check_message_count,
@@ -54,7 +55,7 @@ def configure_states(roleIds: dict):
 
     # Configure transitions for new member state
     new_member_state.add_transition(EventType.MESSAGE, check_message_count, PlayerState.ACTIVE_MEMBER)
-    new_member_state.add_transition(EventType.TIME_ELAPSED, time_elapsed(1), PlayerState.ACTIVE_MEMBER)
+    new_member_state.add_transition(EventType.TIME_ELAPSED, time_elapsed(NEWPLAYER_COOLDOWN), PlayerState.ACTIVE_MEMBER)
     new_member_state.add_transition(EventType.MANUAL_UPDATE, handle_manual_update)
 
     # Configure transitions for active member state

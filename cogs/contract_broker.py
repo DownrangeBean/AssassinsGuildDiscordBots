@@ -7,6 +7,7 @@ import datetime
 
 from discord.types.member import Member
 
+from bot import CONTRACT_FREQ
 from .state_machine.states import RoleTypes, PlayerState
 from .role_management import RoleManagement
 
@@ -23,7 +24,7 @@ class ContractBroker(commands.Cog):
         """Clean up when the cog is unloaded."""
         self.contract_distribution.cancel()
 
-    @tasks.loop(minutes=5)
+    @tasks.loop(minutes=CONTRACT_FREQ)
     async def contract_distribution(self):
         """
         Every two hours, collect all members with 'Active Player' role,
@@ -205,4 +206,8 @@ class ContractBroker(commands.Cog):
 
 
 async def setup(bot):
+    isDisabled = False
+    if isDisabled:
+        print('WARNING: contract cog has been turned off')
+        return
     await bot.add_cog(ContractBroker(bot))
